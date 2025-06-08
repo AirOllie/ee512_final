@@ -1,0 +1,14 @@
+{
+  "strong_hip_straight": 0.7822593380430823,
+  "strong_shoulder_angle": 0.4329670183983461,
+  "strong_neck_thorax_spine": 0.2880465862455143,
+  "strong_head_neck_thorax": 0.2773290234035044,
+  "strong_thorax_spine_pelvis": 0.23216507954036705,
+  "strong_hip_knee_foot": 0.580077070593561,
+  "med_shoulder_straight": 0.3408246118661837,
+  "med_neck_spine_straight": 0.025228711119108155,
+  "med_bone_ratios": 0.3573908924886871,
+  "weak_spine_vertical": 0.26620627990392326,
+  "weak_hip_knee_vertical": 0.06145182539047994,
+  "weak_coronal_orientation": 0.1944718138435932
+}
