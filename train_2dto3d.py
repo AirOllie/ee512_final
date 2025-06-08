@@ -1,26 +1,4 @@
 #!/usr/bin/env python3
-"""
-train_pose2mesh_joints.py
-
-Reproduces *exactly* the Pose2Mesh (Guler et al., ECCV 2020) training procedure
-when regressing 3D Human3.6M joints from 2D joints (17 joints).
-
-Key points (from https://github.com/hongsukchoi/Pose2Mesh_RELEASE):
-  • Optimizer: Adam(lr=1e-3, weight_decay=0)
-  • LR schedule: drop by 10× at epochs 80 and 140 (total 200 epochs)
-  • Batch size: 64
-  • No extra 2D→3D augmentations beyond flip (flip is only used for PoseNet; not for mesh)
-  • Total_epochs = 200
-
-Every 5 epochs, we visualize a handful of training samples and save (2D, GT 3D, Pred 3D)
-to ./checkpoints/visualizations/.
-
-Usage:
-    python train_pose2mesh_joints.py \
-        --data_path /home/oliver/Documents/data/h36m \
-        --image_size 1000 1000 \
-        --out_dir ./checkpoints
-"""
 
 import os
 import random
@@ -39,14 +17,14 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # ----------------------------------------------------------------------
-# 1. H36MDataset (no extra augmentations, exactly as Pose2Mesh mesh‐training).
+# 1. H36MDataset
 # ----------------------------------------------------------------------
 class H36MDataset(Dataset):
     def __init__(self, data_path, split="train", image_size=(1000, 1000)):
         """
         data_path: root of H36M (must contain annot/train.h5, annot/valid.h5, train_images.txt, valid_images.txt)
         split: "train" or "valid"
-        image_size: (H, W) for normalizing 2D → [-1,+1]. Pose2Mesh uses ground‐truth 2D joints (no noise).
+        image_size: (H, W) for normalizing 2D → [-1,+1].
         """
         self.data_path = data_path
         self.split = split
@@ -102,7 +80,7 @@ class H36MDataset(Dataset):
 
         H, W = self.image_size
 
-        # Normalize 2D: (x,y) pixel → (x_norm, y_norm) in [-1,+1] (Pose2Mesh uses GT 2D directly)
+        # Normalize 2D: (x,y) pixel → (x_norm, y_norm) in [-1,+1]
         x = k2d[:, 0]
         y = k2d[:, 1]
         x_n = (x - (W / 2.0)) / (W / 2.0)
@@ -158,7 +136,7 @@ def normalize_adjacency(A):
     return torch.from_numpy(A_norm.astype(np.float32))
 
 # ----------------------------------------------------------------------
-# 3. GCN model (exact same layers/depth as Pose2Mesh's "pose2mesh_net", but only for 17 joints).
+# 3. GCN model
 # ----------------------------------------------------------------------
 class GraphConv(nn.Module):
     def __init__(self, in_channels, out_channels, bias=True):
@@ -180,7 +158,7 @@ class Pose2MeshJoints(nn.Module):
     def __init__(self, A_norm, hidden_dims=[64, 128, 128, 64, 32]):
         """
         A_norm: torch.Tensor (17×17) normalized adjacency
-        hidden_dims: [64, 128, 128, 64, 32]  (same as official Pose2Mesh)
+        hidden_dims: [64, 128, 128, 64, 32]
         """
         super(Pose2MeshJoints, self).__init__()
         self.A_norm = A_norm  # (17×17)
@@ -481,7 +459,7 @@ def compute_coronal_plane_normal(pred3d):
     return F.normalize(n, dim=-1)
 
 # ----------------------------------------------------------------------
-# 5. Plotting / visualization utilities (exactly the 2D/3D plotting from your original script).
+# 5. Plotting / visualization utilities
 # ----------------------------------------------------------------------
 def build_image_lookup(root_dir):
     """
@@ -520,7 +498,7 @@ def rotate_x_minus90(joints_3d):
 
 def rotate_combined(joints_3d):
     """
-    Only -90° about X (Pose2Mesh visualization uses that).
+    Only -90° about X
     """
     return rotate_x_minus90(joints_3d)
 
@@ -740,7 +718,7 @@ def main(args):
     # Optimizer: Adam(lr=1e-3, weight_decay=0)
     optimizer = Adam(model.parameters(), lr=args.lr, weight_decay=0.0)
 
-    # LR scheduler: drop LR by 0.1 at epochs 80 and 140 (total 200 epochs) — exactly Pose2Mesh's schedule.
+    # LR scheduler: drop LR by 0.1 at epochs 80 and 140 (total 200 epochs)
     scheduler = MultiStepLR(optimizer, milestones=[80, 140], gamma=0.1)
 
     # Prepare image lookup for visualization
@@ -825,18 +803,18 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--image_size", type=int, nargs=2, default=[1000, 1000],
-        help="(H, W) used to normalize 2D keypoints (Pose2Mesh uses GT 2D in pixel coords)."
+        help="(H, W) used to normalize 2D keypoints"
     )
-    parser.add_argument("--batch_size", type=int, default=64, help="Batch size (Pose2Mesh uses 64)")
-    parser.add_argument("--lr", type=float, default=1e-3, help="Initial LR = 1e-3 (Pose2Mesh)")
+    parser.add_argument("--batch_size", type=int, default=64, help="Batch size")
+    parser.add_argument("--lr", type=float, default=1e-3, help="Initial LR = 1e-3")
     parser.add_argument(
         "--hidden_dims", type=int, nargs="+",
         default=[64, 128, 128, 64, 32],
-        help="Hidden dims for each GraphConv block (matches Pose2Mesh)."
+        help="Hidden dims for each GraphConv block"
     )
     parser.add_argument(
         "--epochs", type=int, default=200,
-        help="Total epochs (Pose2Mesh uses 200)."
+        help="Total epochs"
     )
     parser.add_argument(
         "--out_dir", type=str, default="./checkpoints_customize_pro",
