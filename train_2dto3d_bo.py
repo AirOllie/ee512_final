@@ -1,15 +1,4 @@
 #!/usr/bin/env python3
-"""
-train_pose2mesh_joints_bo.py
-
-Uses Bayesian Optimization (Optuna) to find optimal loss weights for 
-Pose2Mesh training with geometric constraints.
-
-For each trial:
-- Trains for a limited number of epochs with suggested hyperparameters
-- Evaluates on validation set
-- Visualizes 5 test samples with 2D and 3D predictions
-"""
 
 import os
 import random
